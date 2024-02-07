@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Day {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum Status {
+  RESERVED
+  CONFIRMED
+  CANCELED
+  DONE
+}
+
+model Barbershop {
+  id           String         @id @default(uuid())
+  name         String
+  address      String         @db.VarChar(55)
+  image        String
+  about        String
+  recommended  Boolean        @default(false)
+  highlight    Boolean        @default(false)
+  visits       Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  // barbers   Barber[]
+  phones       Phones[]
+  rates        Rates[]
+  services     Services[]
+  days         Days[]
+  reservations Reservations[]
+}
+
+model Rates {
+  id           String     @id @default(uuid())
+  userId       String
+  rate         Float
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String
+}
+
+model Services {
+  id           String         @id @default(uuid())
+  name         String
+  price        Float
+  description  String
+  image        String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  barbershop   Barbershop     @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String
+  reservations Reservations[]
+}
+
+model Phones {
+  id           String     @id @default(uuid())
+  number       String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String
+}
+
+model Days {
+  id           String     @id @default(uuid())
+  day          Day
+  open         String     @default("")
+  close        String     @default("")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String
+}
+
+model Reservations {
+  id           String     @id @default(uuid())
+  userId       String
+  date         String
+  time         String
+  status       Status     @default(RESERVED)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String
+  service      Services   @relation(fields: [serviceId], references: [id])
+  serviceId    String
+}
